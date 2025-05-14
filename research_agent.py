@@ -2,14 +2,25 @@ import os
 import uuid
 import asyncio
 import streamlit as st
+import locale
+import sys
 from datetime import datetime
 from dotenv import load_dotenv
-import sys
 
-# Установка кодировки UTF-8 на стандартные потоки
-import io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+# Настройка локали и кодировки для поддержки эмодзи
+try:
+    # Пытаемся установить UTF-8 локаль
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+except:
+    # Если не удалось, пробуем другие варианты или выводим предупреждение
+    try:
+        locale.setlocale(locale.LC_ALL, '')  # Используем системную локаль
+    except:
+        st.warning("⚠️ Не удалось установить UTF-8 локаль. Возможны проблемы с эмодзи. Запустите с флагом: python -X utf8=1 -m streamlit run research_agent.py")
+
+# Явно указываем UTF-8 для stdout (если запущено не с флагом utf8=1)
+if sys.stdout.encoding.lower() != 'utf-8':
+    st.warning(f"⚠️ Текущая кодировка: {sys.stdout.encoding}. Для поддержки эмодзи рекомендуется запуск с UTF-8: python -X utf8=1 -m streamlit run research_agent.py")
 
 from agents import (
     Agent, 
@@ -198,7 +209,7 @@ async def run_research(topic):
     with trace("News Research", group_id=st.session_state.conversation_id):
         # Start with the triage agent
         with message_container:
-            st.write("**Триаж-агент**: Планирование подхода к исследованию...")
+            st.write("🔍 **Triage Agent**: Planning research approach...")
         
         triage_result = await Runner.run(
             triage_agent,
@@ -223,7 +234,7 @@ async def run_research(topic):
             plan_display = research_plan
         
         with message_container:
-            st.write("**План исследования**:")
+            st.write("📋 **Research Plan**:")
             st.json(plan_display)
         
         # Display facts as they're collected
@@ -235,15 +246,15 @@ async def run_research(topic):
             current_facts = len(st.session_state.collected_facts)
             if current_facts > previous_fact_count:
                 with fact_placeholder.container():
-                    st.write("**Собранные факты**:")
+                    st.write("📚 **Collected Facts**:")
                     for fact in st.session_state.collected_facts:
-                        st.info(f"**Факт**: {fact['fact']}\n\n**Источник**: {fact['source']}")
+                        st.info(f"**Fact**: {fact['fact']}\n\n**Source**: {fact['source']}")
                 previous_fact_count = current_facts
             await asyncio.sleep(1)
         
         # Editor Agent phase
         with message_container:
-            st.write("**Редактор-агент**: Создание подробного исследовательского отчёта...")
+            st.write("📝 **Editor Agent**: Creating comprehensive research report...")
         
         try:
             report_result = await Runner.run(
@@ -254,7 +265,7 @@ async def run_research(topic):
             st.session_state.report_result = report_result.final_output
             
             with message_container:
-                st.write("**Исследование завершено! Отчёт сгенерирован.**")
+                st.write("✅ **Research Complete! Report Generated.**")
                 
                 # Preview a snippet of the report
                 if hasattr(report_result.final_output, 'report'):
@@ -262,12 +273,12 @@ async def run_research(topic):
                 else:
                     report_preview = str(report_result.final_output)[:300] + "..."
                     
-                st.write("**Предварительный просмотр отчёта**:")
+                st.write("📄 **Report Preview**:")
                 st.markdown(report_preview)
-                st.write("*Полный документ доступен во вкладке 'Отчёт'.*")
+                st.write("*See the Report tab for the full document.*")
                 
         except Exception as e:
-            st.error(f"Ошибка при создании отчёта: {str(e)}")
+            st.error(f"Error generating report: {str(e)}")
             # Fallback to display raw agent response
             if hasattr(triage_result, 'new_items'):
                 messages = [item for item in triage_result.new_items if hasattr(item, 'content')]
@@ -276,8 +287,8 @@ async def run_research(topic):
                     st.session_state.report_result = raw_content
                     
                     with message_container:
-                        st.write("**Исследование завершено, но возникла проблема с созданием структурированного отчёта.**")
-                        st.write("Необработанные результаты исследования доступны во вкладке 'Отчёт'.")
+                        st.write("⚠️ **Research completed but there was an issue generating the structured report.**")
+                        st.write("Raw research results are available in the Report tab.")
     
     st.session_state.research_done = True
 

@@ -43,8 +43,10 @@ pip install -r requirements.txt
 
 ### 4. Запустите приложение
 ```bash
-streamlit run research_agent.py
+python -X utf8=1 -m streamlit run research_agent.py
 ```
+
+> **Примечание**: Флаг `-X utf8=1` обеспечивает корректную поддержку эмодзи и кириллицы.
 
 ### 5. Откройте приложение в браузере
 Перейдите по адресу: [http://localhost:8501](http://localhost:8501)
@@ -102,8 +104,10 @@ pip install -r requirements.txt
 
 ### 4. Run the app
 ```bash
-streamlit run research_agent.py
+python -X utf8=1 -m streamlit run research_agent.py
 ```
+
+> **Note**: The `-X utf8=1` flag ensures proper support for emoji and non-ASCII characters.
 
 ### 5. Open in browser
 Go to: [http://localhost:8501](http://localhost:8501)

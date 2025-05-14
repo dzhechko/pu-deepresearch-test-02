@@ -1,0 +1,1 @@
+web: python -X utf8=1 -m streamlit run research_agent.py 
