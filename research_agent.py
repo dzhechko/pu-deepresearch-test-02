@@ -192,7 +192,7 @@ async def run_research(topic):
     with trace("News Research", group_id=st.session_state.conversation_id):
         # Start with the triage agent
         with message_container:
-            st.write("🔍 **Triage Agent**: Planning research approach...")
+            st.write("**Триаж-агент**: Планирование подхода к исследованию...")
         
         triage_result = await Runner.run(
             triage_agent,
@@ -217,7 +217,7 @@ async def run_research(topic):
             plan_display = research_plan
         
         with message_container:
-            st.write("📋 **Research Plan**:")
+            st.write("**План исследования**:")
             st.json(plan_display)
         
         # Display facts as they're collected
@@ -229,15 +229,15 @@ async def run_research(topic):
             current_facts = len(st.session_state.collected_facts)
             if current_facts > previous_fact_count:
                 with fact_placeholder.container():
-                    st.write("📚 **Collected Facts**:")
+                    st.write("**Собранные факты**:")
                     for fact in st.session_state.collected_facts:
-                        st.info(f"**Fact**: {fact['fact']}\n\n**Source**: {fact['source']}")
+                        st.info(f"**Факт**: {fact['fact']}\n\n**Источник**: {fact['source']}")
                 previous_fact_count = current_facts
             await asyncio.sleep(1)
         
         # Editor Agent phase
         with message_container:
-            st.write("📝 **Editor Agent**: Creating comprehensive research report...")
+            st.write("**Редактор-агент**: Создание подробного исследовательского отчёта...")
         
         try:
             report_result = await Runner.run(
@@ -248,7 +248,7 @@ async def run_research(topic):
             st.session_state.report_result = report_result.final_output
             
             with message_container:
-                st.write("✅ **Research Complete! Report Generated.**")
+                st.write("**Исследование завершено! Отчёт сгенерирован.**")
                 
                 # Preview a snippet of the report
                 if hasattr(report_result.final_output, 'report'):
@@ -256,12 +256,12 @@ async def run_research(topic):
                 else:
                     report_preview = str(report_result.final_output)[:300] + "..."
                     
-                st.write("📄 **Report Preview**:")
+                st.write("**Предпросмотр отчёта**:")
                 st.markdown(report_preview)
-                st.write("*See the Report tab for the full document.*")
+                st.write("*Полный отчёт доступен на вкладке «Отчёт».*")
                 
         except Exception as e:
-            st.error(f"Error generating report: {str(e)}")
+            st.error(f"Ошибка при генерации отчёта: {str(e)}")
             # Fallback to display raw agent response
             if hasattr(triage_result, 'new_items'):
                 messages = [item for item in triage_result.new_items if hasattr(item, 'content')]
@@ -270,8 +270,8 @@ async def run_research(topic):
                     st.session_state.report_result = raw_content
                     
                     with message_container:
-                        st.write("⚠️ **Research completed but there was an issue generating the structured report.**")
-                        st.write("Raw research results are available in the Report tab.")
+                        st.write("**Исследование завершено, но возникла проблема при генерации структурированного отчёта.**")
+                        st.write("Необработанные результаты исследования доступны на вкладке «Отчёт».")
     
     st.session_state.research_done = True
 
