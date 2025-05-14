@@ -4,6 +4,12 @@ import asyncio
 import streamlit as st
 from datetime import datetime
 from dotenv import load_dotenv
+import sys
+
+# Установка кодировки UTF-8 на стандартные потоки
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 from agents import (
     Agent, 
@@ -256,12 +262,12 @@ async def run_research(topic):
                 else:
                     report_preview = str(report_result.final_output)[:300] + "..."
                     
-                st.write("**Предпросмотр отчёта**:")
+                st.write("**Предварительный просмотр отчёта**:")
                 st.markdown(report_preview)
-                st.write("*Полный отчёт доступен на вкладке «Отчёт».*")
+                st.write("*Полный документ доступен во вкладке 'Отчёт'.*")
                 
         except Exception as e:
-            st.error(f"Ошибка при генерации отчёта: {str(e)}")
+            st.error(f"Ошибка при создании отчёта: {str(e)}")
             # Fallback to display raw agent response
             if hasattr(triage_result, 'new_items'):
                 messages = [item for item in triage_result.new_items if hasattr(item, 'content')]
@@ -270,8 +276,8 @@ async def run_research(topic):
                     st.session_state.report_result = raw_content
                     
                     with message_container:
-                        st.write("**Исследование завершено, но возникла проблема при генерации структурированного отчёта.**")
-                        st.write("Необработанные результаты исследования доступны на вкладке «Отчёт».")
+                        st.write("**Исследование завершено, но возникла проблема с созданием структурированного отчёта.**")
+                        st.write("Необработанные результаты исследования доступны во вкладке 'Отчёт'.")
     
     st.session_state.research_done = True
 
