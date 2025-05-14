@@ -281,10 +281,12 @@ if start_button:
         try:
             asyncio.run(run_research(user_topic))
         except Exception as e:
-            st.error(f"An error occurred during research: {str(e)}")
+            st.error(f"Произошла ошибка во время исследования: {str(e)}")
             # Set a basic report result so the user gets something
-            st.session_state.report_result = f"# Research on {user_topic}\n\nUnfortunately, an error occurred during the research process. Please try again later or with a different topic.\n\nError details: {str(e)}"
-            st.session_state.research_done = True
+            if "report_result" not in st.session_state or not st.session_state.report_result:
+                title = user_topic if isinstance(user_topic, str) else "Research Topic"
+                st.session_state.report_result = f"# Исследование темы: {title}\n\nК сожалению, произошла ошибка во время исследования. Пожалуйста, попробуйте позже или с другой темой.\n\nДетали ошибки: {str(e)}"
+                st.session_state.research_done = True
 
 # Display results in the Report tab
 with tab2:
@@ -292,19 +294,19 @@ with tab2:
         report = st.session_state.report_result
         
         # Handle different possible types of report results
-        if hasattr(report, 'title'):
+        if hasattr(report, 'title') and report.title:
             # We have a properly structured ResearchReport object
             title = report.title
             
             # Display outline if available
             if hasattr(report, 'outline') and report.outline:
-                with st.expander("Report Outline", expanded=True):
+                with st.expander("Структура отчёта", expanded=True):
                     for i, section in enumerate(report.outline):
                         st.markdown(f"{i+1}. {section}")
             
             # Display word count if available
             if hasattr(report, 'word_count'):
-                st.info(f"Word Count: {report.word_count}")
+                st.info(f"Количество слов: {report.word_count}")
             
             # Display the full report in markdown
             if hasattr(report, 'report'):
@@ -316,29 +318,32 @@ with tab2:
             
             # Display sources if available
             if hasattr(report, 'sources') and report.sources:
-                with st.expander("Sources"):
+                with st.expander("Источники"):
                     for i, source in enumerate(report.sources):
                         st.markdown(f"{i+1}. {source}")
             
             # Add download button for the report
+            safe_title = title.replace(' ', '_') if isinstance(title, str) else "report"
             st.download_button(
-                label="Download Report",
+                label="Скачать отчёт",
                 data=report_content,
-                file_name=f"{title.replace(' ', '_')}.md",
+                file_name=f"{safe_title}.md",
                 mime="text/markdown"
             )
         else:
             # Handle string or other type of response
             report_content = str(report)
-            title = user_topic.title()
+            # Безопасное получение заголовка
+            title = user_topic.title() if isinstance(user_topic, str) else "Research Topic"
             
             st.title(f"{title}")
             st.markdown(report_content)
             
-            # Add download button for the report
+            # Add download button for the report - защита от ошибок типа
+            safe_title = title.replace(' ', '_') if isinstance(title, str) else "report"
             st.download_button(
-                label="Download Report",
+                label="Скачать отчёт",
                 data=report_content,
-                file_name=f"{title.replace(' ', '_')}.md",
+                file_name=f"{safe_title}.md",
                 mime="text/markdown"
             )
